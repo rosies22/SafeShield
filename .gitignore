@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.py[cod]
+*.db
+.env
+app_backup.py
+app_before_database.py
