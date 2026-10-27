@@ -1,94 +1,190 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Report Incident | SafeShield</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <meta name="theme-color" content="#102f29">
+    <title>Report an Incident | SafeShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
 
 <header class="topbar">
-    <div>
-        <h1>🛡️ SafeShield</h1>
-        <p>Incident Reporting</p>
-    </div>
-
-    <a class="button secondary" href="{{ url_for('dashboard') }}">
-        Dashboard
+    <a class="brand" href="{{ url_for('dashboard') }}">
+        <span class="brand-icon">S</span>
+        <span>
+            <strong>SafeShield</strong>
+            <small>Protecting lives. Securing communities.</small>
+        </span>
     </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a class="nav-link active" href="{{ url_for('report_incident') }}">Report Incident</a>
+        <a class="nav-link sos-nav" href="{{ url_for('dashboard') }}#emergency">SOS Test</a>
+    </nav>
 </header>
 
-<main class="container form-container">
+<main class="container report-page">
 
-    <section class="form-card">
+    <div class="report-breadcrumb">
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <span>/</span>
+        <span>Report an incident</span>
+    </div>
 
-        <h2>Report a Security Incident</h2>
+    <section class="report-hero">
+        <div class="report-hero-content">
+            <span class="eyebrow">COMMUNITY SAFETY</span>
+            <h1>Speak up. Help protect<br>your <span>community.</span></h1>
+            <p>Your report helps document security concerns and gives authorized personnel information to review.</p>
+        </div>
 
-        <p>This form records test reports on your computer.</p>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-                <div class="notice {{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endwith %}
-
-        <form method="POST">
-
-            <label for="incident_type">Incident Type</label>
-
-            <select id="incident_type" name="incident_type" required>
-
-                <option value="">Select an incident</option>
-
-                {% for incident_type in incident_types %}
-                    <option value="{{ incident_type }}">
-                        {{ incident_type }}
-                    </option>
-                {% endfor %}
-
-            </select>
-
-            <label for="location">Incident Location</label>
-
-            <input
-                id="location"
-                name="location"
-                type="text"
-                maxlength="200"
-                placeholder="Enter the general location"
-                required
-            >
-
-            <label for="description">Incident Details</label>
-
-            <textarea
-                id="description"
-                name="description"
-                rows="6"
-                maxlength="2000"
-                placeholder="Describe what happened"
-                required
-            ></textarea>
-
-            <p class="help">
-                Avoid unnecessary personal information.
-                Reports are unverified until reviewed.
-            </p>
-
-            <button class="button primary" type="submit">
-                Submit Test Report
-            </button>
-
-        </form>
-
+        <div class="report-hero-mark" aria-hidden="true">
+            <div class="report-shield">S</div>
+            <span>YOUR COMMUNITY<br>MATTERS</span>
+        </div>
     </section>
 
-</main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="notice {{ category }}" role="status">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
 
+    <div class="report-layout">
+
+        <section class="panel report-form-panel">
+            <div class="report-form-heading">
+                <div class="form-heading-icon" aria-hidden="true">+</div>
+                <div>
+                    <span class="section-kicker">INCIDENT SUBMISSION</span>
+                    <h2>Incident details</h2>
+                    <p>Complete the fields below as accurately as possible.</p>
+                </div>
+            </div>
+
+            <form method="POST" class="incident-form">
+
+                <div class="field-group">
+                    <label for="incident_type">Incident category <span>*</span></label>
+                    <select id="incident_type" name="incident_type" required>
+                        <option value="">Choose an incident category</option>
+                        {% for incident_type in incident_types %}
+                            <option value="{{ incident_type }}"
+                                {% if request.form.get('incident_type') == incident_type %}selected{% endif %}>
+                                {{ incident_type }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <small>Select the category that best describes the incident.</small>
+                </div>
+
+                <div class="field-group">
+                    <label for="location">Incident location <span>*</span></label>
+                    <div class="field-with-icon">
+                        <span aria-hidden="true">⌖</span>
+                        <input
+                            id="location"
+                            name="location"
+                            type="text"
+                            maxlength="200"
+                            placeholder="e.g. Near the community market"
+                            value="{{ request.form.get('location', '') }}"
+                            required
+                        >
+                    </div>
+                    <small>Provide a useful location or nearby landmark. Avoid sharing unnecessary personal details.</small>
+                </div>
+
+                <div class="field-group">
+                    <label for="description">What happened? <span>*</span></label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="7"
+                        maxlength="2000"
+                        placeholder="Describe what you observed, when it happened, and other relevant details..."
+                        required
+                    >{{ request.form.get('description', '') }}</textarea>
+                    <div class="field-meta">
+                        <small>Share factual details. Do not put yourself at risk to gather more information.</small>
+                        <small>Maximum 2,000 characters</small>
+                    </div>
+                </div>
+
+                <div class="report-privacy">
+                    <span class="privacy-icon" aria-hidden="true">i</span>
+                    <div>
+                        <strong>Before you submit</strong>
+                        <p>Reports are initially unverified and may require review. This form does not guarantee an immediate emergency response.</p>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a class="button form-cancel" href="{{ url_for('dashboard') }}">Cancel</a>
+                    <button class="button primary form-submit" type="submit">
+                        Submit Incident <span aria-hidden="true">→</span>
+                    </button>
+                </div>
+
+            </form>
+        </section>
+
+        <aside class="report-sidebar">
+
+            <section class="panel guidance-panel">
+                <span class="section-kicker">REPORTING GUIDE</span>
+                <h2>Help us understand what happened.</h2>
+
+                <div class="guide-item">
+                    <span class="guide-number">01</span>
+                    <div>
+                        <strong>Choose a category</strong>
+                        <p>Select the incident type that most closely matches what you observed.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-number">02</span>
+                    <div>
+                        <strong>Describe the location</strong>
+                        <p>Include a street, landmark, or recognizable community location.</p>
+                    </div>
+                </div>
+
+                <div class="guide-item">
+                    <span class="guide-number">03</span>
+                    <div>
+                        <strong>Stick to the facts</strong>
+                        <p>Describe what you know. Clearly distinguish observations from assumptions.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="report-emergency">
+                <div class="emergency-mini-icon" aria-hidden="true">!</div>
+                <h3>Is someone in immediate danger?</h3>
+                <p>Do not wait for this form to be reviewed. Contact the appropriate local emergency service directly.</p>
+                <a href="{{ url_for('dashboard') }}#emergency">Open SafeShield SOS test →</a>
+                <small>The current SOS feature records a test event only. It does not contact responders.</small>
+            </section>
+
+            <div class="report-assurance">
+                <span aria-hidden="true">✓</span>
+                <p><strong>Community-first reporting</strong><br>Provide useful information while respecting people's privacy and safety.</p>
+            </div>
+
+        </aside>
+    </div>
+
+    <footer class="footer">
+        <span class="footer-brand">SafeShield</span>
+        <span>Community safety through responsible reporting.</span>
+        <span>2026</span>
+    </footer>
+
+</main>
 </body>
 </html>
