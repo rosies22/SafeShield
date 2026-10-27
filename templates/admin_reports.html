@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Incident Reports | SafeShield Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .admin-reports-page {
+            min-height: 100vh;
+            background: #f3f7f4;
+            padding: 28px;
+            color: #203329;
+        }
+        .admin-reports-container {
+            max-width: 1250px;
+            margin: auto;
+        }
+        .admin-reports-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+        .admin-reports-brand {
+            color: #176b42;
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .admin-reports-header p {
+            color: #6c7a71;
+            margin-bottom: 0;
+        }
+        .admin-logout-button {
+            background: #fff;
+            border: 1px solid #d9e4dc;
+            color: #31533f;
+            padding: 11px 16px;
+            border-radius: 10px;
+            font: inherit;
+            font-weight: 650;
+            cursor: pointer;
+        }
+        .admin-logout-button:hover {
+            background: #edf5ef;
+        }
+        .admin-reports-panel {
+            background: #fff;
+            border: 1px solid #e0e9e2;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(20, 60, 35, .04);
+        }
+        .admin-reports-panel h1 {
+            margin-top: 0;
+        }
+        .admin-report-count {
+            color: #6b7c71;
+            margin-bottom: 22px;
+        }
+        .admin-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .admin-reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+        .admin-reports-table th,
+        .admin-reports-table td {
+            padding: 15px 12px;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid #e9efea;
+        }
+        .admin-reports-table th {
+            color: #637469;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            background: #f8faf8;
+        }
+        .admin-reports-table td {
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+        .admin-report-type {
+            font-weight: 750;
+            color: #214c33;
+        }
+        .admin-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #fff4d8;
+            color: #805b0d;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .admin-empty-state {
+            padding: 38px 16px;
+            text-align: center;
+            color: #6b7c71;
+        }
+        .admin-empty-state h2 {
+            color: #304638;
+        }
+        .admin-reports-footer {
+            margin-top: 20px;
+            color: #718076;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        @media (max-width: 600px) {
+            .admin-reports-page {
+                padding: 16px;
+            }
+            .admin-reports-panel {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="admin-reports-page">
+        <div class="admin-reports-container">
+            <header class="admin-reports-header">
+                <div>
+                    <div class="admin-reports-brand">SafeShield Admin</div>
+                    <p>Private incident review workspace</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('admin_logout') }}">
+                    <button class="admin-logout-button" type="submit">
+                        Sign out
+                    </button>
+                </form>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <p role="status">{{ message }}</p>
+                {% endfor %}
+            {% endwith %}
+
+            <section class="admin-reports-panel">
+                <h1>Incident reports</h1>
+                <p class="admin-report-count">
+                    {{ incidents|length }} report(s) recorded
+                </p>
+
+                {% if incidents %}
+                    <div class="admin-table-wrap">
+                        <table class="admin-reports-table">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Incident</th>
+                                    <th>Location</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Date reported</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for incident in incidents %}
+                                    <tr>
+                                        <td>#{{ incident["id"] }}</td>
+                                        <td>
+                                            <span class="admin-report-type">
+                                                {{ incident["type"] }}
+                                            </span>
+                                        </td>
+                                        <td>{{ incident["location"] }}</td>
+                                        <td>{{ incident["description"] }}</td>
+                                        <td>
+                                            <span class="admin-status">
+                                                {{ incident["status"] }}
+                                            </span>
+                                        </td>
+                                        <td>{{ incident["created_at"] }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="admin-empty-state">
+                        <h2>No reports yet</h2>
+                        <p>Submitted incident reports will appear here.</p>
+                    </div>
+                {% endif %}
+            </section>
+
+            <p class="admin-reports-footer">
+                Handle incident information confidentially. Verify reports
+                before treating them as confirmed incidents. The current
+                version displays reports but does not yet provide status
+                editing or emergency notifications.
+            </p>
+        </div>
+    </main>
+</body>
+</html>

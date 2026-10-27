@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Administrator Login | SafeShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .admin-auth-page {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: #f3f7f4;
+        }
+        .admin-auth-card {
+            width: 100%;
+            max-width: 430px;
+            padding: 36px;
+            background: #fff;
+            border: 1px solid #e0e9e2;
+            border-radius: 20px;
+            box-shadow: 0 18px 50px rgba(20, 60, 35, .08);
+        }
+        .admin-brand {
+            color: #176b42;
+            font-size: 25px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .admin-subtitle {
+            color: #64746a;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+        .admin-field {
+            margin-bottom: 18px;
+        }
+        .admin-field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 650;
+            color: #24372b;
+        }
+        .admin-field input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px 14px;
+            border: 1px solid #d4dfd7;
+            border-radius: 10px;
+            font: inherit;
+        }
+        .admin-field input:focus {
+            outline: 2px solid #a5d8b8;
+            border-color: #238451;
+        }
+        .admin-submit {
+            width: 100%;
+            border: 0;
+            border-radius: 10px;
+            padding: 14px;
+            background: #176b42;
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .admin-submit:hover {
+            background: #115633;
+        }
+        .admin-message {
+            padding: 12px;
+            border-radius: 9px;
+            margin-bottom: 16px;
+            background: #fff0ef;
+            color: #a12d28;
+        }
+        .admin-back {
+            display: block;
+            margin-top: 22px;
+            text-align: center;
+            color: #176b42;
+            text-decoration: none;
+        }
+        .admin-security-note {
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid #edf1ed;
+            color: #738078;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <main class="admin-auth-page">
+        <section class="admin-auth-card">
+            <div class="admin-brand">SafeShield</div>
+            <h1>Administrator sign in</h1>
+            <p class="admin-subtitle">
+                Sign in to securely review and manage community incident reports.
+            </p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <div class="admin-message" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('admin_login') }}">
+                <div class="admin-field">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+
+                <div class="admin-field">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button class="admin-submit" type="submit">
+                    Sign in securely
+                </button>
+            </form>
+
+            <div class="admin-security-note">
+                Restricted area. Incident details are intended for authorized
+                administrators only.
+            </div>
+
+            <a class="admin-back" href="{{ url_for('dashboard') }}">
+                ← Return to SafeShield
+            </a>
+        </section>
+    </main>
+</body>
+</html>
