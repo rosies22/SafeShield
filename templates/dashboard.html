@@ -5,243 +5,451 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#102f29">
-    <title>SafeShield | Security Dashboard</title>
+    <title>SafeShield | Community Safety</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .status-verified {
+            background: #ddf6e5;
+            color: #207345;
+        }
+
+        .status-rejected {
+            background: #ffebeb;
+            color: #b52f2f;
+        }
+
+        .status-unverified {
+            background: #fff2d3;
+            color: #94610a;
+        }
+
+        .status-under-review {
+            background: #e4efff;
+            color: #235fb2;
+        }
+
+        .status-resolved {
+            background: #ddf6e5;
+            color: #207345;
+        }
+
+        .status-label {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 750;
+            white-space: nowrap;
+        }
+
+        .public-report-list {
+            padding: 4px 20px 20px;
+        }
+
+        .public-report {
+            padding: 18px 4px;
+            border-bottom: 1px solid #edf1ee;
+        }
+
+        .public-report:last-child {
+            border-bottom: 0;
+        }
+
+        .public-report-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .public-report h3 {
+            margin: 0;
+            color: #26372f;
+            font-size: 14px;
+        }
+
+        .public-report p {
+            margin: 9px 0 0;
+            color: #687770;
+            font-size: 12px;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .public-report .report-reference {
+            color: #8b9791;
+            font-size: 10px;
+        }
+
+        .public-report .resolved-note {
+            color: #207345;
+            font-weight: 700;
+        }
+
+        .status-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 22px 18px;
+        }
+
+        .status-legend span {
+            color: #687770;
+            font-size: 10px;
+        }
+
+        .dashboard-flashes {
+            margin-bottom: 16px;
+        }
+
+        .dashboard-flashes .notice {
+            margin-bottom: 10px;
+        }
+
+        .sos-form .button {
+            width: 100%;
+        }
+
+        .public-report-empty {
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .public-report-empty p {
+            color: #74817d;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 700px) {
+            .public-report-list {
+                padding: 4px 16px 16px;
+            }
+
+            .public-report-top {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
+
 <body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('dashboard') }}">
+            <span class="brand-icon">S</span>
+            <span>
+                <strong>SafeShield</strong>
+                <small>Community Safety Network</small>
+            </span>
+        </a>
 
-<header class="topbar">
-    <a class="brand" href="{{ url_for('dashboard') }}">
-        <span class="brand-icon">S</span>
-        <span>
-            <strong>SafeShield</strong>
-            <small>Protecting lives. Securing communities.</small>
-        </span>
-    </a>
-
-    <nav class="nav-links">
-        <a class="nav-link active" href="{{ url_for('dashboard') }}">Dashboard</a>
-        <a class="nav-link" href="{{ url_for('report_incident') }}">Report Incident</a>
-        <a class="nav-link sos-nav" href="#emergency">SOS Test</a>
-    </nav>
-</header>
-
-<main class="container">
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="notice {{ category }}" role="status">{{ message }}</div>
-        {% endfor %}
-    {% endwith %}
-
-    <section class="hero">
-        <div class="hero-content">
-            <span class="eyebrow">COMMUNITY SAFETY PLATFORM</span>
-            <h1>A safer community<br>starts with <span>you.</span></h1>
-            <p>Report security incidents, share important information, and help build a safer community for everyone.</p>
-            <a class="button primary" href="{{ url_for('report_incident') }}">
-                <span aria-hidden="true">+</span> Report an Incident <span aria-hidden="true">→</span>
+        <nav class="nav-links" aria-label="Main navigation">
+            <a class="nav-link active" href="{{ url_for('dashboard') }}">
+                Overview
             </a>
-        </div>
 
-        <div class="hero-note">
-            <span class="hero-note-icon" aria-hidden="true">✳</span>
-            <div>
-                <strong>Safety is a shared responsibility.</strong>
-                <p>See something? Report it. Help your community stay informed.</p>
-            </div>
-        </div>
-    </section>
+            <a class="nav-link" href="{{ url_for('report_incident') }}">
+                Report Incident
+            </a>
 
-    {% set resolved_count = incidents | selectattr('status', 'equalto', 'Resolved') | list | length %}
+            <a class="nav-link sos-nav" href="#emergency-sos">
+                Emergency SOS
+            </a>
+        </nav>
+    </header>
 
-    <section class="stats" aria-label="Incident statistics">
-        <article class="stat-card stat-green">
-            <div class="stat-top">
-                <span class="stat-icon" aria-hidden="true">▤</span>
-                <span class="stat-label">Total Reports</span>
-            </div>
-            <strong class="stat-number">{{ total }}</strong>
-            <span class="stat-caption">All submitted incidents</span>
-        </article>
+    <main class="container">
 
-        <article class="stat-card stat-amber">
-            <div class="stat-top">
-                <span class="stat-icon" aria-hidden="true">◷</span>
-                <span class="stat-label">Open Reports</span>
-            </div>
-            <strong class="stat-number">{{ open_count }}</strong>
-            <span class="stat-caption">Awaiting resolution</span>
-        </article>
-
-        <article class="stat-card stat-red">
-            <div class="stat-top">
-                <span class="stat-icon" aria-hidden="true">!</span>
-                <span class="stat-label">SOS Activations</span>
-            </div>
-            <strong class="stat-number">{{ sos_count }}</strong>
-            <span class="stat-caption">Recorded SOS events</span>
-        </article>
-
-        <article class="stat-card stat-blue">
-            <div class="stat-top">
-                <span class="stat-icon" aria-hidden="true">✓</span>
-                <span class="stat-label">Resolved Reports</span>
-            </div>
-            <strong class="stat-number">{{ resolved_count }}</strong>
-            <span class="stat-caption">Marked as resolved</span>
-        </article>
-    </section>
-
-    <section class="dashboard-grid">
-
-        <article class="panel reports-panel" id="reports">
-            <div class="panel-header">
-                <div>
-                    <span class="section-kicker">COMMUNITY ACTIVITY</span>
-                    <h2>Recent Incident Reports</h2>
-                </div>
-                <span class="record-count">{{ total }} total</span>
-            </div>
-
-            {% if incidents %}
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Incident</th>
-                                <th>Location</th>
-                                <th>Status</th>
-                                <th>Date &amp; Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for incident in incidents %}
-                            <tr>
-                                <td class="incident-id">#{{ incident.id }}</td>
-                                <td>
-                                    <div class="incident-name">
-                                        {% if incident.type == 'Emergency SOS' %}
-                                            <span class="incident-dot dot-red"></span>
-                                        {% else %}
-                                            <span class="incident-dot"></span>
-                                        {% endif %}
-                                        {{ incident.type }}
-                                    </div>
-                                </td>
-                                <td class="location-cell">
-                                    <span aria-hidden="true">⌖</span>
-                                    {{ incident.location }}
-                                </td>
-                                <td>
-                                    <span class="status status-{{ incident.status | lower | replace(' ', '-') }}">
-                                        {{ incident.status }}
-                                    </span>
-                                </td>
-                                <td class="date-cell">{{ incident.created_at }}</td>
-                            </tr>
-                            <tr class="details-row">
-                                <td colspan="5">{{ incident.description }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="empty">
-                    <span class="empty-icon" aria-hidden="true">▤</span>
-                    <h3>No incidents reported yet</h3>
-                    <p>When a community member submits a report, it will appear here.</p>
-                    <a class="button primary" href="{{ url_for('report_incident') }}">Submit First Report</a>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="dashboard-flashes">
+                    {% for category, message in messages %}
+                        <div class="notice {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 </div>
             {% endif %}
+        {% endwith %}
 
-            <div class="panel-footer">
-                <span>Reports are unverified until reviewed.</span>
+        <section class="hero">
+            <div class="hero-content">
+                <span class="eyebrow">COMMUNITY PROTECTION NETWORK</span>
+
+                <h1>
+                    Safer communities.<br>
+                    <span>Stronger together.</span>
+                </h1>
+
+                <p>
+                    Report security incidents, follow community safety
+                    updates, and stay informed about the latest recorded
+                    incident statuses in your community.
+                </p>
+
+                <a class="button primary"
+                   href="{{ url_for('report_incident') }}">
+                    + Submit an Incident Report
+                </a>
             </div>
-        </article>
 
-        <aside class="side-column">
-
-            <section class="sos-card" id="emergency">
-                <div class="sos-heading">
-                    <span class="sos-symbol" aria-hidden="true">!</span>
-                    <div>
-                        <span class="section-kicker">EMERGENCY TOOL</span>
-                        <h2>Emergency SOS</h2>
-                        <p>Record a test emergency alert.</p>
-                    </div>
-                </div>
-
-                <form action="{{ url_for('emergency_sos') }}"
-                      method="POST"
-                      class="sos-form"
-                      onsubmit="return confirm('Record a test SOS? No real notification will be sent.');">
-
-                    <label for="sos-location">Incident location</label>
-                    <input
-                        id="sos-location"
-                        name="location"
-                        type="text"
-                        maxlength="200"
-                        placeholder="Enter a location (optional)"
-                    >
-
-                    <button class="button danger sos-button" type="submit">
-                        <span aria-hidden="true">!</span> Record Test SOS
-                    </button>
-
-                    <p class="sos-disclaimer">
-                        Test mode: this records an event in the database. It does not contact emergency responders.
-                    </p>
-                </form>
-            </section>
-
-            <section class="panel quick-panel">
-                <div class="panel-header compact-header">
-                    <div>
-                        <span class="section-kicker">GET STARTED</span>
-                        <h2>Quick Actions</h2>
-                    </div>
-                </div>
-
-                <a class="quick-action" href="{{ url_for('report_incident') }}">
-                    <span class="quick-icon quick-green" aria-hidden="true">+</span>
-                    <span class="quick-copy">
-                        <strong>Report an incident</strong>
-                        <small>Submit a security report</small>
-                    </span>
-                    <span class="quick-arrow" aria-hidden="true">→</span>
-                </a>
-
-                <a class="quick-action" href="#reports">
-                    <span class="quick-icon quick-blue" aria-hidden="true">≡</span>
-                    <span class="quick-copy">
-                        <strong>Review reports</strong>
-                        <small>Browse recent community activity</small>
-                    </span>
-                    <span class="quick-arrow" aria-hidden="true">→</span>
-                </a>
-            </section>
-
-            <section class="safety-note">
-                <span class="safety-note-icon" aria-hidden="true">i</span>
+            <aside class="hero-note">
+                <div class="hero-note-icon">✓</div>
                 <div>
-                    <strong>Stay safety-conscious</strong>
-                    <p>Provide accurate information. Do not approach suspected threats or put yourself at risk.</p>
+                    <strong>Community awareness matters</strong>
+                    <p>
+                        Review published report statuses and use
+                        responsible reporting practices to help
+                        support community safety.
+                    </p>
                 </div>
-            </section>
+            </aside>
+        </section>
 
-        </aside>
-    </section>
+        <section class="stats" aria-label="Community report statistics">
+            <article class="stat-card stat-green">
+                <div class="stat-top">
+                    <span class="stat-icon">▤</span>
+                    <span class="stat-label">Total Reports</span>
+                </div>
+                <strong class="stat-number">{{ total }}</strong>
+                <span class="stat-caption">
+                    All recorded incident reports
+                </span>
+            </article>
 
-    <footer class="footer">
-        <span class="footer-brand">SafeShield</span>
-        <span>Community safety through responsible reporting.</span>
-        <span>2026</span>
-    </footer>
+            <article class="stat-card stat-amber">
+                <div class="stat-top">
+                    <span class="stat-icon">◷</span>
+                    <span class="stat-label">Unresolved</span>
+                </div>
+                <strong class="stat-number">{{ open_count }}</strong>
+                <span class="stat-caption">
+                    Reports not yet marked resolved
+                </span>
+            </article>
 
-</main>
+            <article class="stat-card stat-red">
+                <div class="stat-top">
+                    <span class="stat-icon">!</span>
+                    <span class="stat-label">SOS Records</span>
+                </div>
+                <strong class="stat-number">{{ sos_count }}</strong>
+                <span class="stat-caption">
+                    SOS events recorded in the system
+                </span>
+            </article>
+
+            <article class="stat-card stat-blue">
+                <div class="stat-top">
+                    <span class="stat-icon">✓</span>
+                    <span class="stat-label">Resolved</span>
+                </div>
+                <strong class="stat-number">
+                    {{ total - open_count }}
+                </strong>
+                <span class="stat-caption">
+                    Reports marked resolved
+                </span>
+            </article>
+        </section>
+
+        <section class="dashboard-grid">
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="section-kicker">COMMUNITY ACTIVITY</span>
+                        <h2>Incident Reports</h2>
+                    </div>
+
+                    <span class="record-count">
+                        {{ total }} total
+                    </span>
+                </div>
+
+                {% if incidents %}
+                    <div class="public-report-list">
+                        {% for incident in incidents %}
+                            <article class="public-report">
+                                <div class="public-report-top">
+                                    <div>
+                                        <h3>{{ incident.type }}</h3>
+                                        <p class="report-reference">
+                                            Report #{{ incident.id }}
+                                        </p>
+                                    </div>
+
+                                    <span class="status-label status-{{ incident.status|lower|replace(' ', '-') }}">
+                                        {{ incident.status }}
+                                    </span>
+                                </div>
+
+                                <p>
+                                    <strong>Location:</strong>
+                                    {{ incident.location }}
+                                </p>
+
+                                <p>
+                                    <strong>Date reported:</strong>
+                                    {{ incident.created_at }}
+                                </p>
+
+                                {% if incident.status == "Resolved" %}
+                                    <p class="resolved-note">
+                                        This report has been marked resolved.
+                                    </p>
+                                {% elif incident.status == "Under Review" %}
+                                    <p>
+                                        This report is currently under review.
+                                    </p>
+                                {% elif incident.status == "Verified" %}
+                                    <p>
+                                        This report has been marked verified
+                                        by an administrator.
+                                    </p>
+                                {% elif incident.status == "Rejected" %}
+                                    <p>
+                                        This report has been marked rejected.
+                                    </p>
+                                {% else %}
+                                    <p>
+                                        This report has not yet been verified.
+                                    </p>
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="public-report-empty">
+                        <div class="empty-icon">✓</div>
+                        <h3>No incident reports yet</h3>
+                        <p>
+                            Community reports will appear here after
+                            they have been submitted.
+                        </p>
+
+                        <a class="button primary"
+                           href="{{ url_for('report_incident') }}">
+                            Submit a Report
+                        </a>
+                    </div>
+                {% endif %}
+
+                <div class="panel-footer">
+                    Report statuses show the latest status recorded
+                    by SafeShield administrators.
+                </div>
+            </div>
+
+            <aside class="side-column">
+
+                <section class="sos-card" id="emergency-sos">
+                    <div class="sos-heading">
+                        <div class="sos-symbol">!</div>
+                        <div>
+                            <span class="section-kicker">
+                                EMERGENCY ASSISTANCE
+                            </span>
+                            <h2>Emergency SOS</h2>
+                            <p>
+                                Record an SOS event in SafeShield.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form class="sos-form"
+                          action="{{ url_for('emergency_sos') }}"
+                          method="POST">
+
+                        <label for="sos-location">
+                            Your location
+                        </label>
+
+                        <input
+                            type="text"
+                            id="sos-location"
+                            name="location"
+                            placeholder="Enter your general location"
+                        >
+
+                        <button class="button danger sos-button"
+                                type="submit">
+                            Activate SOS
+                        </button>
+
+                        <p class="sos-disclaimer">
+                            This prototype records the SOS locally.
+                            It does not contact emergency responders
+                            or automatically dispatch assistance.
+                            In an immediate emergency, contact local
+                            emergency services directly.
+                        </p>
+                    </form>
+                </section>
+
+                <section class="panel quick-panel">
+                    <div class="panel-header compact-header">
+                        <div>
+                            <span class="section-kicker">GET STARTED</span>
+                            <h2>Quick Actions</h2>
+                        </div>
+                    </div>
+
+                    <a class="quick-action"
+                       href="{{ url_for('report_incident') }}">
+                        <span class="quick-icon quick-green">+</span>
+                        <span class="quick-copy">
+                            <strong>Report an Incident</strong>
+                            <small>
+                                Submit details about a security incident.
+                            </small>
+                        </span>
+                        <span class="quick-arrow">›</span>
+                    </a>
+
+                    <a class="quick-action" href="#community-safety">
+                        <span class="quick-icon quick-blue">✓</span>
+                        <span class="quick-copy">
+                            <strong>Safety Information</strong>
+                            <small>
+                                Review important community safety guidance.
+                            </small>
+                        </span>
+                        <span class="quick-arrow">›</span>
+                    </a>
+                </section>
+
+                <section class="safety-note" id="community-safety">
+                    <span class="safety-note-icon">i</span>
+                    <div>
+                        <strong>Stay alert and report responsibly</strong>
+                        <p>
+                            Avoid confronting suspected offenders.
+                            Do not publish victims' identities or
+                            sensitive personal information. Contact
+                            appropriate emergency services when
+                            immediate assistance is needed.
+                        </p>
+                    </div>
+                </section>
+
+            </aside>
+        </section>
+
+        <footer class="footer">
+            <div>
+                <span class="footer-brand">SafeShield</span>
+                <span> Community Safety Network</span>
+            </div>
+
+            <div>
+                Community reports and status updates
+            </div>
+        </footer>
+
+    </main>
 </body>
 </html>

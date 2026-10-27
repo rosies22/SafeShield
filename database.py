@@ -49,3 +49,29 @@ def get_all_incidents():
         """).fetchall()
 
         return [dict(row) for row in rows]
+
+
+def update_incident_status(incident_id, new_status):
+    """Update an incident's status if the ID and status are valid."""
+    allowed_statuses = {
+        "Under Review",
+        "Verified",
+        "Rejected",
+        "Resolved",
+    }
+
+    if new_status not in allowed_statuses:
+        return False
+
+    with get_connection() as connection:
+        cursor = connection.execute(
+            """
+            UPDATE incidents
+            SET status = ?
+            WHERE id = ?
+            """,
+            (new_status, incident_id),
+        )
+
+        return cursor.rowcount > 0
+
